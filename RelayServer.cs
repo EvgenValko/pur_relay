@@ -20,6 +20,14 @@ public class RelayServer : INetEventListener
     
     public bool IsRunning { get; private set; }
 
+    public class Statistics
+    {
+        public int ActiveRooms { get; set; }
+        public int TotalConnections { get; set; }
+        public int TotalRoomsCreated { get; set; }
+        public TimeSpan Uptime { get; set; }
+    }
+
     public RelayServer(RelayServerConfig config)
     {
         _config = config;
@@ -450,14 +458,28 @@ public class RelayServer : INetEventListener
         }
     }
 
+    public Statistics GetStatistics()
+    {
+        lock (_lock)
+        {
+            return new Statistics
+            {
+                ActiveRooms = _rooms.Count,
+                TotalConnections = _totalConnections,
+                TotalRoomsCreated = _totalRoomsCreated,
+                Uptime = DateTime.UtcNow - _startTime
+            };
+        }
+    }
+
     private void PrintStatistics()
     {
-        var uptime = DateTime.UtcNow - _startTime;
+        var stats = GetStatistics();
         Console.WriteLine("\n=== Server Statistics ===");
-        Console.WriteLine($"Uptime: {uptime:hh\\:mm\\:ss}");
-        Console.WriteLine($"Total connections: {_totalConnections}");
-        Console.WriteLine($"Total rooms created: {_totalRoomsCreated}");
-        Console.WriteLine($"Active rooms: {_rooms.Count}");
+        Console.WriteLine($"Uptime: {stats.Uptime:hh\\:mm\\:ss}");
+        Console.WriteLine($"Total connections: {stats.TotalConnections}");
+        Console.WriteLine($"Total rooms created: {stats.TotalRoomsCreated}");
+        Console.WriteLine($"Active rooms: {stats.ActiveRooms}");
         Console.WriteLine("========================\n");
     }
 }

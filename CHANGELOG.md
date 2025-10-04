@@ -2,6 +2,22 @@
 
 All notable changes to PurrNet Relay Server will be documented in this file.
 
+## [1.0.3] - 2025-10-04
+
+### Added
+- **HTTP health check server** for deployment platform compatibility
+  - Runs on port 8080 (configurable with `--http-port`)
+  - Endpoints: `/health`, `/status`, `/ping`
+  - Essential for platforms like Railway, Render, Kubernetes
+  - Dockerfile now includes HEALTHCHECK directive
+- `HealthCheckServer.cs` - Lightweight HTTP server for monitoring
+- `DEPLOYMENT.md` - Complete deployment guide for various platforms
+- Statistics API at `/status` endpoint
+
+### Fixed
+- Deployment failures due to missing HTTP health checks
+- Docker health check configuration
+
 ## [1.0.2] - 2025-10-04
 
 ### Fixed
@@ -122,6 +138,7 @@ All notable changes to PurrNet Relay Server will be documented in this file.
 
 | Version | Date | Notes |
 |---------|------|-------|
+| 1.0.3 | 2025-10-04 | Added HTTP health checks for deployment |
 | 1.0.2 | 2025-10-04 | Fixed data packet parsing (player spawn) |
 | 1.0.1 | 2025-10-04 | Fixed string encoding bug |
 | 1.0.0 | 2025-10-04 | Initial release |

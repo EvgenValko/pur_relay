@@ -8,6 +8,7 @@ Console.WriteLine();
 int port = 9050;
 int maxRooms = 1000;
 int tickRate = 30;
+int httpPort = 8080;
 
 for (int i = 0; i < args.Length; i++)
 {
@@ -25,13 +26,18 @@ for (int i = 0; i < args.Length; i++)
             if (i + 1 < args.Length && int.TryParse(args[i + 1], out int t))
                 tickRate = t;
             break;
+        case "--http-port":
+            if (i + 1 < args.Length && int.TryParse(args[i + 1], out int h))
+                httpPort = h;
+            break;
         case "-h" or "--help":
             Console.WriteLine("Usage: PurrNetRelayServer [options]");
             Console.WriteLine();
             Console.WriteLine("Options:");
-            Console.WriteLine("  -p, --port <port>         Port to listen on (default: 9050)");
+            Console.WriteLine("  -p, --port <port>         UDP port to listen on (default: 9050)");
             Console.WriteLine("  -r, --max-rooms <rooms>   Maximum number of rooms (default: 1000)");
             Console.WriteLine("  -t, --tick-rate <rate>    Server tick rate in Hz (default: 30)");
+            Console.WriteLine("  --http-port <port>        HTTP port for health checks (default: 8080)");
             Console.WriteLine("  -h, --help                Show this help message");
             return;
     }
@@ -44,22 +50,26 @@ var config = new RelayServerConfig
     TickRate = tickRate
 };
 
-Console.WriteLine($"Port: {config.Port}");
+Console.WriteLine($"UDP Port: {config.Port}");
+Console.WriteLine($"HTTP Port: {httpPort}");
 Console.WriteLine($"Max Rooms: {config.MaxRooms}");
 Console.WriteLine($"Tick Rate: {config.TickRate} Hz");
 Console.WriteLine();
 
 var server = new RelayServer(config);
+var healthServer = new HealthCheckServer(server, httpPort);
 
 // Handle Ctrl+C gracefully
 Console.CancelKeyPress += (sender, e) =>
 {
     e.Cancel = true;
     Console.WriteLine("\nShutting down server...");
+    healthServer.Stop();
     server.Stop();
 };
 
 server.Start();
+healthServer.Start();
 
 Console.WriteLine("Server started. Press Ctrl+C to stop.");
 Console.WriteLine();
@@ -71,5 +81,6 @@ while (server.IsRunning)
     Thread.Sleep(1000 / config.TickRate);
 }
 
+healthServer.Stop();
 Console.WriteLine("Server stopped.");
 

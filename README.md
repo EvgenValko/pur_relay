@@ -29,32 +29,52 @@ dotnet build -c Release
 dotnet run
 ```
 
-### With Custom Port
+This starts:
+- UDP relay server on port **9050**
+- HTTP health check server on port **8080**
+
+### With Custom Ports
 
 ```bash
-dotnet run -- --port 9050
+dotnet run -- --port 9050 --http-port 8080
 ```
 
 ### All Options
 
 ```bash
-dotnet run -- --port 9050 --max-rooms 1000 --tick-rate 30
+dotnet run -- --port 9050 --http-port 8080 --max-rooms 1000 --tick-rate 30
 ```
 
 Or after building:
 
 ```bash
-./PurrNetRelayServer --port 9050 --max-rooms 1000 --tick-rate 30
+./PurrNetRelayServer --port 9050 --http-port 8080 --max-rooms 1000 --tick-rate 30
 ```
 
 ## Command Line Options
 
 | Option | Short | Description | Default |
 |--------|-------|-------------|---------|
-| `--port` | `-p` | Port to listen on | 9050 |
+| `--port` | `-p` | UDP port for relay | 9050 |
+| `--http-port` | | HTTP port for health checks | 8080 |
 | `--max-rooms` | `-r` | Maximum number of concurrent rooms | 1000 |
 | `--tick-rate` | `-t` | Server tick rate in Hz | 30 |
 | `--help` | `-h` | Show help message | - |
+
+## Health Checks
+
+The server includes an HTTP server for health monitoring:
+
+- **GET /health** - Returns `{"status":"healthy","relay":"running"}`
+- **GET /status** - Returns detailed statistics (active rooms, connections, uptime)
+- **GET /ping** - Returns `pong`
+
+Test locally:
+```bash
+curl http://localhost:8080/health
+```
+
+Perfect for deployment platforms that require HTTP health checks (Railway, Render, etc.)!
 
 ## Protocol
 
@@ -142,7 +162,16 @@ relayTransport.StartClient();
 - **Max Rooms**: Each room consumes minimal memory, but having many active rooms will increase CPU usage
 - **Network Bandwidth**: The relay forwards all packets, so bandwidth scales with the number of active connections
 
-## Deployment
+## Quick Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment guides for:
+- Railway
+- Render  
+- Docker
+- Kubernetes
+- AWS
+- DigitalOcean
+- And more!
 
 ### Linux (systemd service)
 
